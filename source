@@ -1,0 +1,84 @@
+import datetime
+import subprocess
+import threading
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import ttk
+import openpyxl
+import pandas as pd
+
+#运行一个程序
+def open_program():
+    # 软件路径
+    threading.Thread(target=subprocess.call, args=("C:\Program Files\Craft\CRAFT_Starter.exe",)).start()
+
+#定义一个名为 load_data 的函数，用于读取 Excel 文件中的数据
+def load_data(file_path):
+    data_frame = pd.read_excel(file_path, engine='openpyxl')
+    user_names = data_frame.iloc[:, 0].tolist()
+    products = data_frame.iloc[:, 1].tolist()
+    return user_names, products
+
+
+#打开excel表格
+wb = openpyxl.load_workbook('lab-log.xlsx')
+sheet = wb['Sheet1']
+
+#在外部声明start变量并赋值
+start = datetime.datetime.now()
+
+# 开始时间
+def start_time():
+    global start
+    start = datetime.datetime.now()
+
+# 结束时间
+def end_time():
+    global end
+    end = datetime.datetime.now()
+    selected_user_name = user_name_var.get()
+    selected_product = product_var.get()
+    row = [selected_user_name, selected_product, start, end]
+    # 写入excel
+    sheet.append(row)
+    wb.save('lab-log.xlsx')
+    tk.messagebox.showinfo(title='日志记录', message='本次操作日志已记录')
+
+
+#定义一个名为 create_gui 的函数，用于创建 GUI 界面
+def create_gui(user_names, products,):
+    root = tk.Tk()
+    root.title("实验日志")
+
+    global user_name_var, product_var
+
+    user_name_var = tk.StringVar()
+    product_var = tk.StringVar()
+
+    user_name_label = tk.Label(root, text="User name")
+    user_name_label.grid(row=0, column=0, padx=5, pady=5)
+    user_name_combobox = ttk.Combobox(root, textvariable=user_name_var, values=user_names)
+    user_name_combobox.grid(row=0, column=1, padx=5, pady=5)
+
+    product_label = tk.Label(root, text="Product")
+    product_label.grid(row=1, column=0, padx=5, pady=5)
+    product_combobox = ttk.Combobox(root, textvariable=product_var, values=products)
+    product_combobox.grid(row=1, column=1, padx=5, pady=5)
+
+    start_button = tk.Button(root, text='Start', command=lambda: [start_time, open_program()])
+    start_button.grid(row=3, column=0)
+
+    end_button = tk.Button(root, text='End', command=end_time)
+    end_button.grid(row=3, column=1)
+
+    root.mainloop()
+
+#定义一个名为 main 的函数，用于执行主要的程序逻辑。该函数首先调用 load_data 函数读取 Excel 文件中的数据，然后调用 create_gui 函数创建 GUI 界面
+def main():
+    file_path = 'C:\\Users\\user\\Desktop\\lab-log-file\\modified.xlsx'
+    user_names, products = load_data(file_path)
+    create_gui(user_names, products,)
+
+
+if __name__ == '__main__':
+    main()
